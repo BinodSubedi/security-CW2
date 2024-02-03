@@ -1,10 +1,10 @@
-const User = require('./../models/userModel');
+const User = require("./../models/userModel");
 
-const jwt = require('jsonwebtoken');
-const res = require('express/lib/response');
+const jwt = require("jsonwebtoken");
+const res = require("express/lib/response");
 
 const sendFakeCookie = (res) => {
-  res.cookie('jwt', '0', {
+  res.cookie("jwt", "0", {
     expires: new Date(Date.now() + process.env.JWT__COOKIE__EXPIRES / 90),
     // secure: false,
     httpOnly: false,
@@ -12,9 +12,9 @@ const sendFakeCookie = (res) => {
 };
 
 const sendCookie = (res, token) => {
-  res.cookie('jwt', token, {
+  res.cookie("jwt", token, {
     expires: new Date(
-      Date.now() + process.env.JWT__COOKIE__EXPIRES * 24 * 60 * 60 * 1000
+      Date.now() + process.env.JWT__COOKIE__EXPIRES * 24 * 60 * 60 * 1000,
     ),
     // secure: false,
     httpOnly: false,
@@ -29,7 +29,10 @@ const tokenAssigner = (id) => {
 
 exports.signup = async (req, res) => {
   try {
-    const newUser = await User.create(req.body);
+    console.log(req.body);
+    const { username, password, email } = req.body;
+
+    const newUser = await User.create({ username, password, email });
     const token = tokenAssigner(newUser._id);
 
     // res.cookie('jwt', token, {
@@ -40,16 +43,17 @@ exports.signup = async (req, res) => {
     //   httpOnly: true,
     // });
 
-    sendCookie(res, token);
+    //sendCookie(res, token);
 
     newUser.password = undefined;
 
     res.status(201).json({
-      status: 'success',
+      status: "success",
       token,
       newUser,
     });
   } catch (err) {
+    console.log(err);
     res.status(400).json({
       message: err.message,
     });
@@ -61,6 +65,14 @@ exports.login = async (req, res) => {
     const { username, password } = req.body;
 
     const user = await User.findOne({ username });
+
+    console.log(user, user.Admin);
+
+    if (user.Admin != "true") {
+      return res.status(400).json({
+        status: "fail",
+      });
+    }
 
     const correct = await user.comparePassword(password, user.password);
 
@@ -78,14 +90,14 @@ exports.login = async (req, res) => {
       // });
 
       res.status(200).json({
-        status: 'success',
+        status: "success",
         token,
         user,
       });
     }
   } catch (err) {
     res.status(400).json({
-      status: 'fail',
+      status: "fail",
       error: err.stack,
     });
   }
@@ -93,7 +105,7 @@ exports.login = async (req, res) => {
 
 exports.pushLogin = (req, res) => {
   res.status(200).json({
-    status: 'success',
+    status: "success",
   });
 };
 
@@ -101,6 +113,6 @@ exports.logout = (req, res) => {
   sendFakeCookie(res);
 
   res.status(200).json({
-    status: 'success',
+    status: "success",
   });
 };

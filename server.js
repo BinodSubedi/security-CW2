@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 
 dotenv.config({ path: `${__dirname}/config.env` });
 
-const app = require('./app');
+const app = require("./app");
 
 mongoose
   .connect(process.env.MongoDB__URL, {
@@ -12,7 +12,7 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log('Connected to the database');
+    console.log("Connected to the database");
   })
   .catch((err) => console.log(err));
 
